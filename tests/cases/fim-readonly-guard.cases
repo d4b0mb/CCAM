@@ -1,0 +1,175 @@
+# Test cases for fim-readonly-guard.ps1
+#
+# FIM is a read-only auditor. The guard must ALLOW inspection and DENY anything
+# that changes files, packages, git state, or system state.
+#
+# Format:  ALLOW <command>   or   DENY <command>
+# Lines starting with # are comments. Blank lines are ignored.
+
+# ---------------------------------------------------------------------------
+# 1. Reading and inspecting — must all be ALLOWED
+# ---------------------------------------------------------------------------
+ALLOW ls -la
+ALLOW ls
+ALLOW cat package.json
+ALLOW head -n 50 src/main.c
+ALLOW tail -n 20 server.log
+ALLOW wc -l src/app.js
+ALLOW find . -name "*.ts"
+ALLOW grep -rn "TODO" src/
+ALLOW grep -c "error" app.log
+ALLOW file binary.out
+ALLOW du -sh node_modules
+ALLOW stat README.md
+
+# ---------------------------------------------------------------------------
+# 2. Read-only git — must all be ALLOWED
+# ---------------------------------------------------------------------------
+ALLOW git status
+ALLOW git log --oneline -20
+ALLOW git diff
+ALLOW git diff HEAD~1
+ALLOW git show HEAD
+ALLOW git blame src/auth.js
+ALLOW git ls-files
+ALLOW git branch --list
+
+# ---------------------------------------------------------------------------
+# 3. Version and help queries — must all be ALLOWED
+# ---------------------------------------------------------------------------
+ALLOW node --version
+ALLOW python3 --version
+ALLOW git --version
+ALLOW cargo --version
+ALLOW npm -v
+ALLOW tsc --help
+
+# ---------------------------------------------------------------------------
+# 4. Check-only tooling — must all be ALLOWED
+# ---------------------------------------------------------------------------
+ALLOW tsc --noEmit
+ALLOW cargo check
+ALLOW ruff check .
+ALLOW ruff format --check .
+ALLOW go vet ./...
+ALLOW make -n
+ALLOW npm ls
+ALLOW eslint src/
+
+# ---------------------------------------------------------------------------
+# 5. Deleting and moving — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY rm notes.txt
+DENY rm -rf build/
+DENY rm -f *.log
+DENY rmdir emptydir
+DENY unlink tempfile
+DENY mv old.txt new.txt
+DENY cp src.txt dest.txt
+DENY mkdir newfolder
+DENY touch newfile.txt
+
+# ---------------------------------------------------------------------------
+# 6. Git state changes — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY git commit -m "fix"
+DENY git add .
+DENY git checkout main
+DENY git reset --hard HEAD
+DENY git push origin main
+DENY git pull
+DENY git merge feature
+DENY git stash
+DENY git clean -fd
+
+# ---------------------------------------------------------------------------
+# 7. Package managers — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY npm install
+DENY npm install express
+DENY pip install requests
+DENY pip3 install -r requirements.txt
+DENY cargo add serde
+DENY apt-get install curl
+DENY yarn add lodash
+
+# ---------------------------------------------------------------------------
+# 8. Writing files and redirection — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY echo "hello" > out.txt
+DENY echo "more" >> log.txt
+DENY cat a.txt > b.txt
+DENY sed -i 's/foo/bar/' config.yml
+DENY chmod +x deploy.sh
+DENY ln -s target linkname
+
+# ---------------------------------------------------------------------------
+# 9. Tools that write by default — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY tsc
+DENY ruff check --fix .
+DENY ruff format .
+DENY cargo fmt
+DENY rustfmt src/main.rs
+DENY prettier --write src/
+DENY black .
+
+# ---------------------------------------------------------------------------
+# 10. Inline code that writes — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY python3 -c "open('out.txt','w').write('x')"
+DENY node -e "require('fs').writeFileSync('a.txt','b')"
+DENY python3 -c "import os; os.remove('x.txt')"
+DENY python3 -c "import subprocess; subprocess.run(['ls'])"
+DENY ruby -e "File.write('x.txt','y')"
+
+# ---------------------------------------------------------------------------
+# 11. Network writes and downloads — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY curl -X POST https://example.com/api
+DENY curl -o page.html https://example.com
+DENY curl -d "a=1" https://example.com
+DENY wget https://example.com/file.zip
+DENY unzip archive.zip
+
+# ---------------------------------------------------------------------------
+# 12. THE TRICKY ONES
+# These are where guards usually get it wrong. Each is safe and must be ALLOWED,
+# but each contains text that looks dangerous to a careless pattern matcher.
+# ---------------------------------------------------------------------------
+
+# "rm -rf" appears, but inside a quoted search pattern
+ALLOW grep -rn "rm -rf" scripts/
+ALLOW grep "git commit" history.txt
+
+# dangerous words inside a string being printed, not executed
+ALLOW echo "remember to run npm install"
+ALLOW echo "this will rm the file"
+
+# --rm is a flag, not the rm command
+ALLOW docker ps --all
+ALLOW docker images
+
+# redirection to /dev/null discards output, writes nothing
+ALLOW git status > /dev/null
+ALLOW ls -la 2> /dev/null
+
+# inline code that only reads
+ALLOW python3 -c "print(open('config.json').read())"
+ALLOW node -e "console.log(require('./package.json').version)"
+
+# archive listing, not extraction
+ALLOW unzip -l archive.zip
+ALLOW tar -tzf bundle.tar.gz
+
+# plain GET with no output file
+ALLOW curl -s https://example.com
+ALLOW curl -I https://example.com
+
+# filenames that merely contain scary words
+ALLOW cat install.md
+ALLOW cat docs/removal-policy.md
+ALLOW grep -n "install" README.md
+
+# a commit message quoted inside a read-only git search
+ALLOW git log --grep="commit the fix"

@@ -8,8 +8,10 @@ difference is visible: each one is restricted to what it can honestly do, every 
 is tagged with how it was established, and every report ends with a list of what was
 *not* checked.
 
-> **Version 0.3.0 — early.** In daily use by its author. Windows-only, and the guards
-> have no automated tests yet. Read [Limitations](#limitations) before relying on it.
+> **Version 0.4.0 — early.** In daily use by its author. Windows-only.
+> Guard behaviour is measured, not assumed: **173 test cases, 99.4% correct,
+> 0 false alarms, 1 known gap** — see [Guard test results](docs/results.md).
+> Read [Limitations](#limitations) before relying on it.
 
 ---
 
@@ -113,16 +115,36 @@ Built with: npm run build. Do not run anything.
 
 ---
 
+## Testing the guards
+
+The guards are what make the agents' limits real, so their behaviour is measured
+rather than asserted:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tests\run-all.ps1
+```
+
+`-ExecutionPolicy Bypass` is required because Windows blocks unsigned scripts by
+default. The agent hooks pass the same flag for the same reason.
+
+**173 cases · 172 passed · 0 false alarms · 1 missed mutation.** Full write-up,
+including what the tests do *not* cover, in [docs/results.md](docs/results.md).
+
+Each case is a single line — `ALLOW git status`, `DENY rm -rf build/` — so adding a
+case for a command you care about takes seconds.
+
+---
+
 ## Limitations
 
 Stated plainly, because agents you can't trust are worse than no agents.
 
 - **Windows only.** All three guards are PowerShell. Cross-platform is planned.
-- **The guards have no automated tests.** They were written carefully and work in
-  practice, but nothing proves which commands they catch and which they miss. This
-  is the top priority for the next release.
-- **One known false positive:** the test-runner guard wrongly blocks
-  `bundle exec rspec`.
+- **One known gap, with a failing test committed for it.** The FIM guard allows bare
+  `tsc`, which writes `.js` files next to the sources it compiles. See
+  [results](docs/results.md).
+- **The test results were produced on PowerShell 7.** Claude Code invokes the guards
+  through Windows PowerShell 5.1. The suite runs on both; it has not yet been run there.
 - **A guard is a pattern matcher, not a sandbox.** It inspects the command an agent
   asks to run. It cannot see inside a script once that script starts, and a
   determined user could get past it. It is built to stop an agent's own mistakes,
@@ -137,8 +159,9 @@ Stated plainly, because agents you can't trust are worse than no agents.
 
 ## Roadmap
 
-- [ ] **Test suite for the guards** — a corpus of commands with known correct
-      verdicts, so the safety claims are measured rather than asserted
+- [x] **Test suite for the guards** — 173 cases with known correct verdicts, so the
+      safety claims are measured rather than asserted
+- [ ] Close the bare-`tsc` gap; run the suite on Windows PowerShell 5.1
 - [ ] **A fourth agent that can execute**, confined to a scratch copy of your code —
       so FIM can suspect a problem and something else can actually measure it
 - [ ] Cross-platform guards (macOS / Linux)

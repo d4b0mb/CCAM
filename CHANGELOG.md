@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.4.0 — 2026-09-22
+
+The guards are now measured rather than asserted.
+
+Added:
+
+- `tests/run-guard-tests.ps1` — runs one guard against one case file. A guard reads
+  the hook payload on stdin and exits 0 (allow) or 2 (deny), so testing it is a matter
+  of feeding it a command and reading the exit code.
+- `tests/run-all.ps1` — runs all three suites.
+- `tests/cases/*.cases` — 173 cases: safe commands that must be allowed, dangerous
+  ones that must be blocked, and the deliberately tricky middle (`grep -rn "rm -rf"`,
+  `docker ps --all`, `git status > /dev/null`, test filters whose values are ordinary
+  English words).
+- `docs/results.md` — the numbers, the one failure, and what the tests do not cover.
+
+Results: **173 cases, 172 passed, 0 false alarms, 1 missed mutation (99.4%).**
+
+Open, with a failing test committed for it:
+
+- The FIM guard allows bare `tsc`, which writes `.js` files. Other write-by-default
+  tools (`rustfmt`, `cargo fmt`, `ruff format`) are already denied without a
+  check-only flag; `tsc` is missing from that list.
+
+Removed:
+
+- The documented `bundle exec rspec` false positive. It could not be reproduced —
+  the command passes, as do seven variants of it. The claim has been withdrawn rather
+  than left standing. If it reappears it comes back with a test case attached.
+
 ## 0.3.0 — 2026-09-22
 
 Became a suite. Renamed to CCAM (Claude Code Agent Modules).

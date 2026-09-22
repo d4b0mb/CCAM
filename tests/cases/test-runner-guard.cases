@@ -1,0 +1,106 @@
+# Test cases for test-runner-guard.ps1
+#
+# test-runner runs a project's test suite and reports failures. The guard must
+# ALLOW test commands and DENY anything that edits code, updates a recorded
+# expectation, installs packages, or changes git state.
+#
+# Format:  ALLOW <command>   or   DENY <command>
+
+# ---------------------------------------------------------------------------
+# 1. Running test suites — must all be ALLOWED
+# ---------------------------------------------------------------------------
+ALLOW npm test
+ALLOW npm run test
+ALLOW npx jest
+ALLOW npx vitest run
+ALLOW pytest
+ALLOW pytest tests/
+ALLOW python3 -m pytest
+ALLOW go test ./...
+ALLOW cargo test
+ALLOW cargo nextest run
+ALLOW mvn test
+ALLOW dotnet test
+ALLOW ./gradlew test
+ALLOW php vendor/bin/phpunit
+
+# Ruby. This is the known false positive reported by the author:
+# a plain, safe test command that the guard currently blocks.
+ALLOW bundle exec rspec
+ALLOW bundle exec rspec spec/models
+ALLOW rspec
+ALLOW rake test
+
+# ---------------------------------------------------------------------------
+# 2. Test filters — safe, and a common source of false alarms because the
+#    filter value is an ordinary English word
+# ---------------------------------------------------------------------------
+ALLOW pytest -k "install"
+ALLOW npx jest -t "remove user"
+ALLOW go test ./... -run "TestGitPush"
+ALLOW cargo test "install"
+ALLOW dotnet test --filter "Name~copy"
+ALLOW npx vitest run --grep "commit"
+
+# ---------------------------------------------------------------------------
+# 3. Discovering the test command — reading config must be ALLOWED
+# ---------------------------------------------------------------------------
+ALLOW cat package.json
+ALLOW cat pyproject.toml
+ALLOW cat Makefile
+ALLOW ls -la
+ALLOW grep -n "test" package.json
+ALLOW git status
+ALLOW git log --oneline -5
+
+# ---------------------------------------------------------------------------
+# 4. Updating recorded expectations — must all be DENIED.
+#    Rewriting a snapshot is editing the test.
+# ---------------------------------------------------------------------------
+DENY npx jest -u
+DENY npx jest --updateSnapshot
+DENY npx vitest run --update
+DENY cargo insta accept
+DENY pytest --snapshot-update
+
+# ---------------------------------------------------------------------------
+# 5. Installing dependencies — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY npm install
+DENY npm ci
+DENY pip install -r requirements.txt
+DENY bundle install
+DENY npm ci && npm test
+
+# ---------------------------------------------------------------------------
+# 6. Editing code or tests — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY sed -i 's/assert/skip/' tests/test_auth.py
+DENY rm tests/failing_test.py
+DENY mv tests/broken.js tests/broken.js.bak
+DENY echo "skip" > tests/config.txt
+DENY python3 -c "open('tests/t.py','w').write('pass')"
+
+# ---------------------------------------------------------------------------
+# 7. Git state changes — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY git commit -m "fix tests"
+DENY git checkout -- tests/
+DENY git stash
+
+# ---------------------------------------------------------------------------
+# 8. Formatters and fixers — must all be DENIED
+# ---------------------------------------------------------------------------
+DENY prettier --write .
+DENY eslint --fix src/
+DENY black tests/
+DENY cargo fmt
+
+# ---------------------------------------------------------------------------
+# 9. TRICKY ONES — safe commands that look dangerous
+# ---------------------------------------------------------------------------
+ALLOW grep -rn "npm install" docs/
+ALLOW echo "running the suite"
+ALLOW pytest > /dev/null
+ALLOW cat docs/install.md
+ALLOW go test ./... -run "TestRemoveFile"

@@ -1,0 +1,29 @@
+# Test cases for ama-writeguard.ps1
+#
+# AMA may write ONLY inside an agents directory. Everything else is denied.
+# This guard inspects tool_input.file_path, so run it with -Field file_path.
+#
+# NOTE: these paths are Windows paths with drive letters. The guard rejects any
+# path that is not fully qualified, so this file must be run on Windows to give
+# meaningful results.
+
+# --- permitted: inside an agents directory ---
+ALLOW C:/Users/dev/.claude/agents/reviewer.md
+ALLOW C:/Users/dev/.claude/agents/reviewer-guard.ps1
+ALLOW C:/code/myapp/.claude/agents/deploy-checker.md
+ALLOW C:\Users\dev\.claude\agents\linter.md
+
+# --- denied: project source, config, docs ---
+DENY C:/code/myapp/src/index.js
+DENY C:/code/myapp/package.json
+DENY C:/code/myapp/README.md
+DENY C:/Users/dev/.claude/settings.json
+DENY C:/Users/dev/.claude/skills/thing/SKILL.md
+DENY C:/code/myapp/CLAUDE.md
+
+# --- denied: escapes and malformed paths ---
+DENY C:/Users/dev/.claude/agents/../../../Windows/System32/evil.exe
+DENY ../../etc/passwd
+DENY agents/relative.md
+DENY //server/share/agents/thing.md
+DENY \\server\share\agents\thing.md
