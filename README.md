@@ -14,12 +14,17 @@ writes the definition file, and hands it to a reviewer before calling it finishe
 
 ## Who this is for
 
-If you use AI assistants but have never written an agent definition by hand, that's
-exactly the gap this fills. Building a good subagent means knowing which settings
-actually exist, how to stop it from doing damage, and how to write a description
-that makes it get picked at the right moment. AMA already knows all of that.
+**You already use Claude Code. This is the part of it you're probably not using.**
 
-You say what you want. It asks only the questions it genuinely can't answer itself.
+Claude Code lets you build subagents — specialised assistants with their own
+instructions, their own tool access, and their own hard limits. Most people never
+build one, because it means learning which settings exist, which tool names are
+valid, why hook paths have to be absolute, and — the one that catches everyone —
+that the `description` field is what decides whether your agent ever gets picked
+in the first place.
+
+AMA already knows all of that. You say what you want; it asks only the questions
+it genuinely can't answer itself.
 
 ## What makes it different
 
