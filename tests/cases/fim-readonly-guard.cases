@@ -173,3 +173,15 @@ ALLOW grep -n "install" README.md
 
 # a commit message quoted inside a read-only git search
 ALLOW git log --grep="commit the fix"
+
+# ---------------------------------------------------------------------------
+# 13. TypeScript compiler (added 0.4.1 after the 0.4.0 suite caught this gap)
+# tsc writes .js files unless told not to.
+# (bare `tsc` and `tsc --noEmit` are already covered in sections 9 and 4)
+# ---------------------------------------------------------------------------
+DENY tsc --project tsconfig.build.json
+DENY npx tsc
+DENY tsc -p .
+DENY tsc --init
+ALLOW npx tsc --noEmit
+ALLOW tsc --noEmit -p tsconfig.json

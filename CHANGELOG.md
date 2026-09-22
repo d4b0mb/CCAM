@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.4.1 — 2026-09-22
+
+Closed the gap the 0.4.0 suite found.
+
+Fixed:
+
+- `fim-readonly-guard.ps1` now denies `tsc` (and `tsgo`) unless `--noEmit` or `--dry`
+  is present. Bare `tsc` writes `.js` files next to its sources, which FIM is supposed
+  to be incapable of. The flag test is case-insensitive, matching TypeScript's own
+  flag handling.
+
+Added:
+
+- Six further cases around the fix: `npx tsc`, `tsc -p .`, `tsc --project <file>`,
+  `tsc --init`, and two `--noEmit` spellings that must still be allowed.
+
+Results: **179 cases, 179 passed, 0 false alarms, 0 missed mutations.**
+
+The failing test for this gap was committed in 0.4.0, before the fix existed.
+
 ## 0.4.0 — 2026-09-22
 
 The guards are now measured rather than asserted.
@@ -17,6 +37,7 @@ Added:
 - `docs/results.md` — the numbers, the one failure, and what the tests do not cover.
 
 Results: **173 cases, 172 passed, 0 false alarms, 1 missed mutation (99.4%).**
+Verified on Windows PowerShell 5.1 and PowerShell 7.4.6 — identical results on both.
 
 Open, with a failing test committed for it:
 

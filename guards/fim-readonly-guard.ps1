@@ -211,6 +211,13 @@ try {
     if ((Has $noredir ($SEP + '(?:rustfmt|cargo\s+fmt)' + $END)) -and -not (Has $noredir '(?:^|\s)--check(?:\s|$)')) {
         Deny 'rustfmt/cargo fmt write files by default; use --check'
     }
+    # tsc emits .js next to its sources unless told not to. A project whose tsconfig
+    # sets "noEmit": true would write nothing, but the guard cannot see the tsconfig,
+    # and a rare denied call is cheaper than a broken read-only promise.
+    # TypeScript flags are case-insensitive, hence (?i).
+    if ((Has $noredir ($SEP + '(?:tsc|tsgo)' + $END)) -and -not (Has $noredir '(?i)(?:^|\s)(?:--noEmit|--dry)(?:\s|$)')) {
+        Deny 'tsc writes .js files by default; use tsc --noEmit'
+    }
     if ((Has $noredir ($SEP + 'ruff\s+format' + $END)) -and -not (Has $noredir '(?:^|\s)(?:--check|--diff)(?:\s|$)')) {
         Deny 'ruff format writes files by default; use ruff format --check or --diff'
     }

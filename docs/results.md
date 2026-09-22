@@ -1,6 +1,6 @@
 # Guard test results
 
-**Run date:** 22 September 2026 · **CCAM version:** 0.4.0
+**Run date:** 22 September 2026 · **CCAM version:** 0.4.1
 
 The three guards are the mechanism behind CCAM's central claim: that each agent is
 restricted to what it can honestly do. Until now that claim was asserted. This is the
@@ -29,10 +29,13 @@ is the run that matters; 7.x agreeing with it means the suite is portable.
 
 | Guard | Cases | Passed | Failed | Correct |
 |---|---:|---:|---:|---:|
-| `fim-readonly-guard.ps1` | 100 | 99 | 1 | 99.0% |
+| `fim-readonly-guard.ps1` | 106 | 106 | 0 | 100% |
 | `test-runner-guard.ps1` | 58 | 58 | 0 | 100% |
 | `ama-writeguard.ps1` | 15 | 15 | 0 | 100% |
-| **Total** | **173** | **172** | **1** | **99.4%** |
+| **Total** | **179** | **179** | **0** | **100%** |
+
+The 0.4.0 run scored 172 of 173, with one missed mutation. That gap is now closed and
+six further cases were added around it; see below.
 
 Two kinds of failure are counted separately, because they are not equally serious:
 
@@ -40,28 +43,37 @@ Two kinds of failure are counted separately, because they are not equally seriou
 - **Missed mutation** — a dangerous command allowed through. The guard's promise did
   not hold.
 
-Across 173 cases: **0 false alarms, 1 missed mutation.**
+Across 179 cases: **0 false alarms, 0 missed mutations.**
 
-## The one failure
+## The gap that was found, and closed
 
-**`tsc` is allowed, and should not be.**
+**0.4.0 — `tsc` was allowed, and should not have been.**
 
 Run without arguments, the TypeScript compiler writes `.js` files next to the sources
 it compiles. That is a mutation, and FIM is supposed to be incapable of it. FIM's own
-instructions already say to prefer `tsc --noEmit`, but the guard does not enforce it,
-so an agent that forgets is not stopped.
+instructions already said to prefer `tsc --noEmit`, but nothing enforced it, so an
+agent that forgot was not stopped.
 
-The guard already handles this exact pattern for other tools — `rustfmt`, `cargo fmt`,
-`ruff format` and a dozen more are denied unless a check-only flag is present. `tsc` is
-missing from that list.
+The guard already handled this exact pattern for a dozen other tools — `rustfmt`,
+`cargo fmt`, `ruff format` and the rest are denied unless a check-only flag is
+present. `tsc` was simply missing from that list.
+
+**0.4.1 — fixed.** `tsc` (and `tsgo`) are now denied unless `--noEmit` or `--dry` is
+present. The flag test is case-insensitive, because TypeScript's own flags are.
 
 There is a genuine argument on the other side: a project whose `tsconfig.json` sets
-`"noEmit": true` writes nothing when `tsc` is run bare, so denying it would be a false
-alarm in that case. But the guard's own stated principle settles it — "a rare false
-positive costs one denied call; a false negative would break the read-only promise."
+`"noEmit": true` writes nothing when `tsc` runs bare, so denying it is a false alarm
+in that case. The guard cannot see the tsconfig, and its own stated principle settles
+the trade-off — "a rare false positive costs one denied call; a false negative would
+break the read-only promise."
 
-**Status: open.** The failing test is committed before any fix, so the fix has
-something to prove itself against.
+Six cases were added alongside the fix, covering the forms most likely to slip past a
+narrow patch: `npx tsc`, `tsc -p .`, `tsc --project <file>`, `tsc --init`, and two
+`--noEmit` spellings that must still be allowed.
+
+**The order matters.** The failing test was committed in 0.4.0, before any fix existed.
+The fix in 0.4.1 had something to prove itself against, rather than being declared
+correct by the person who wrote it.
 
 ## A claim that did not survive testing
 
