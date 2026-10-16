@@ -42,6 +42,20 @@ It marks every setting as `STATED` (you said it), `DERIVED` (the job required it
 `ASSUMED` (it had to pick) — so you can see and correct every guess it made. Until a
 reviewer has read the result, AMA calls it a draft and says so.
 
+### OHUM — the update manager
+
+Changes an agent that already exists. You say which agent and what should change;
+OHUM makes the smallest edit, shows the old and new text side by side, and gets the
+result reviewed by FIM.
+
+It can only edit `<name>.md` files in an agents directory. It cannot edit its own
+definition or any guard script, so it cannot loosen the limits that make the other
+agents trustworthy. Edits that *do* loosen an agent (adding Bash or Write, weakening
+a hook, raising the turn cap) need your explicit yes first.
+
+**Guard not yet run.** `ohum-guard.ps1` and its cases were written without access to
+PowerShell, so they have not been executed. Run the suite before relying on it.
+
 ### FIM — the auditor
 
 Reads code and reports whether it is correct, functional, necessary, and in the right
@@ -107,6 +121,8 @@ Claude Code requires an absolute path here — it can't be made relative.
 
 ```
 @ama I want an agent that flags any pull request touching the database schema.
+
+@ohum In C:/Users/YOU/.claude/agents, lower fim's maxTurns to 30.
 
 @fim review src/auth/. It should validate a JWT and reject expired tokens.
 Built with: npm run build. Do not run anything.

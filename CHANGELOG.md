@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+Added:
+
+- `ohum.md` — OHUM, the on-hand update manager. Edits existing agent definitions,
+  flags loosening changes for explicit confirmation, hands every edit to FIM.
+- `guards/ohum-guard.ps1` — Edit guard: `<name>.md` directly inside an agents
+  directory only; denies `ohum.md`, all `.ps1` files, nested paths.
+- `tests/cases/ohum-guard.cases` (26 cases) and its entry in `tests/run-all.ps1`.
+
+Not yet verified: the guard and cases were written without PowerShell available, so
+the new suite has not been run. The 179-case result above is for the earlier guards.
+
 ## 0.4.1 — 2026-09-22
 
 Closed the gap the 0.4.0 suite found.

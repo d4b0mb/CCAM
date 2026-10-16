@@ -1,0 +1,46 @@
+# Test cases for ohum-guard.ps1
+#
+# OHUM may edit ONLY <name>.md files directly inside an agents directory, and never
+# ohum.md itself. Guard scripts (*.ps1) are denied: changing one is a human decision.
+# This guard inspects tool_input.file_path, so run it with -Field file_path.
+#
+# NOTE: Windows paths with drive letters; the guard rejects anything not fully
+# qualified, so run this on Windows for meaningful results. Not yet run: see CHANGELOG.
+
+# --- permitted: existing agent definitions ---
+ALLOW C:/Users/dev/.claude/agents/fim.md
+ALLOW C:/Users/dev/.claude/agents/ama.md
+ALLOW C:/Users/dev/.claude/agents/test-runner.md
+ALLOW C:/code/myapp/.claude/agents/deploy-checker.md
+ALLOW C:\Users\dev\.claude\agents\linter.md
+
+# --- denied: OHUM's own limits ---
+DENY C:/Users/dev/.claude/agents/ohum.md
+DENY C:\Users\dev\.claude\agents\ohum.md
+DENY C:/Users/dev/.claude/agents/../agents/ohum.md
+
+# --- denied: guard scripts and other non-definition files ---
+DENY C:/Users/dev/.claude/agents/fim-readonly-guard.ps1
+DENY C:/Users/dev/.claude/agents/ama-writeguard.ps1
+DENY C:/Users/dev/.claude/agents/ohum-guard.ps1
+DENY C:/Users/dev/.claude/agents/notes.txt
+DENY C:/Users/dev/.claude/agents/fim.md.bak
+
+# --- denied: nested paths ---
+DENY C:/Users/dev/.claude/agents/sub/fim.md
+
+# --- denied: project source, config, docs ---
+DENY C:/code/myapp/src/index.js
+DENY C:/code/myapp/README.md
+DENY C:/Users/dev/.claude/settings.json
+DENY C:/code/myapp/CLAUDE.md
+
+# --- denied: escapes and malformed paths ---
+DENY C:/Users/dev/.claude/agents/../../../Windows/System32/evil.md
+DENY ../../etc/passwd
+DENY agents/relative.md
+DENY C:foo/.claude/agents/fim.md
+DENY //server/share/.claude/agents/fim.md
+DENY \\server\share\.claude\agents\fim.md
+DENY C:/Users/dev/.claude/agents
+DENY C:/Users/dev/.claude/agents/
