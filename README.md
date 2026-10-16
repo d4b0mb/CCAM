@@ -53,8 +53,8 @@ definition or any guard script, so it cannot loosen the limits that make the oth
 agents trustworthy. Edits that *do* loosen an agent (adding Bash or Write, weakening
 a hook, raising the turn cap) need your explicit yes first.
 
-**Guard not yet run.** `ohum-guard.ps1` and its cases were written without access to
-PowerShell, so they have not been executed. Run the suite before relying on it.
+**Guard test status.** `ohum-guard.ps1` passes its 26 cases on PowerShell 7.4.6 on
+Linux. It has not been run on Windows PowerShell 5.1, which is what Claude Code uses.
 
 ### FIM — the auditor
 

@@ -5,7 +5,7 @@
 # This guard inspects tool_input.file_path, so run it with -Field file_path.
 #
 # NOTE: Windows paths with drive letters; the guard rejects anything not fully
-# qualified, so run this on Windows for meaningful results. Not yet run: see CHANGELOG.
+# qualified. Passes on PowerShell 7.4.6 on Linux; not yet run on Windows PowerShell 5.1.
 
 # --- permitted: existing agent definitions ---
 ALLOW C:/Users/dev/.claude/agents/fim.md

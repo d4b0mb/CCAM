@@ -10,8 +10,8 @@ Added:
   directory only; denies `ohum.md`, all `.ps1` files, nested paths.
 - `tests/cases/ohum-guard.cases` (26 cases) and its entry in `tests/run-all.ps1`.
 
-Not yet verified: the guard and cases were written without PowerShell available, so
-the new suite has not been run. The 179-case result above is for the earlier guards.
+Results: the new suite passes 26 of 26 on PowerShell 7.4.6 on Linux. Not yet run on
+Windows PowerShell 5.1. The 179-case result below is for the earlier guards only.
 
 ## 0.4.1 — 2026-09-22
 
