@@ -4,6 +4,12 @@
 
 Added:
 
+- `dev.md` — developer agent that writes code to disk but never executes anything;
+  returns the commands for the caller to run.
+- `guards/dev-writeguard.ps1` — Write/Edit guard for `dev`. Not yet covered by test cases.
+- FIM project mode (Section 7 of `fim.md`): optional two-run flow that produces a
+  master reference document for a new or mid-project codebase.
+
 - `ohum.md` — OHUM, the on-hand update manager. Edits existing agent definitions,
   flags loosening changes for explicit confirmation, hands every edit to FIM.
 - `guards/ohum-guard.ps1` — Edit guard: `<name>.md` directly inside an agents
