@@ -83,6 +83,20 @@ test-runner physically cannot do it.
 It also never guesses your test command. It reads your project's own config and cites
 where it found it, or reports that it couldn't determine one.
 
+### Also included
+
+- **dev** — writes code to disk but never executes anything; returns the commands for
+  you to run.
+- **planner** — turns a scope into a technical plan and briefs for other agents, and
+  archives each run. Needs an archive folder: edit the `YOU` paths in `planner.md`,
+  `guards/planner-writeguard.ps1` and `guards/planner-gitguard.ps1`.
+- **researcher** — researches a topic online and writes one new `.txt` file. Edit the
+  `YOU` paths in `researcher.md` and `guards/researcher-writeguard.ps1`.
+- **ssea** — senior software engineer agent for architecture and technical review; can
+  delegate to `dev` and `fim` behind an approval gate.
+
+`dev`, `planner` and `researcher` guards are not yet covered by the test suite.
+
 ---
 
 ## The idea underneath

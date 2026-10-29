@@ -4,6 +4,21 @@
 
 Added:
 
+- `planner.md` — dissects a scope into a technical plan plus ready-to-paste briefs for
+  other agents; archives every run to a log folder and its private git repo.
+- `guards/planner-writeguard.ps1`, `guards/planner-gitguard.ps1` — confine `planner` to
+  `.md` writes inside its archive folder and to a fixed set of git commands against it.
+  Not yet covered by test cases.
+- `researcher.md` — web research agent that writes findings to one new `.txt` file.
+- `guards/researcher-writeguard.ps1` — allows exactly one new `.txt` file in the
+  research folder. Not yet covered by test cases.
+- `ssea.md` — senior software engineer agent: technical review, architecture and
+  sequencing, optionally delegating to `dev` and `fim` behind an approval gate.
+
+Note: the `planner` and `researcher` guards hard-code their folders
+(`C:/Users/YOU/planner-logs`, `C:/Users/YOU/Documents/research`). Edit the `YOU` paths in
+the guards and in the matching definition files before use.
+
 - `dev.md` — developer agent that writes code to disk but never executes anything;
   returns the commands for the caller to run.
 - `guards/dev-writeguard.ps1` — Write/Edit guard for `dev`. Not yet covered by test cases.
