@@ -4,13 +4,14 @@
 
 Claude Code will tell you it checked something. Usually it did. Sometimes it didn't,
 and there's no way for you to tell the difference. CCAM's agents are built so the
-difference is visible: each one is restricted to what it can honestly do, every claim
-is tagged with how it was established, and every report ends with a list of what was
-*not* checked.
+difference is visible: each one is restricted to what it can honestly do, and the
+auditor tags every claim with how it was established and ends every report with a list
+of what was *not* checked.
 
 > **Version 0.4.1 — early.** In daily use by its author. Windows-only.
-> The `fim` and `ama` guards are measured, not assumed: **121 test cases** — see
-> [Guard test results](docs/results.md).
+> The `fim` and `ama` guards are measured, not assumed: **121 test cases, all passing
+> on Windows PowerShell 5.1** — see [Guard test results](docs/results.md). The `dev`,
+> `planner` and `researcher` guards have no test cases yet.
 > Read [Limitations](#limitations) before relying on it.
 
 ---
@@ -31,11 +32,20 @@ CCAM gives you six that are already built, one of which builds more.
 
 ## The agents
 
+| Agent | Job | Tools | Guard |
+|---|---|---|---|
+| [`ama`](ama.md) | Builds new agent definitions | Read, Write, Glob, Agent | `ama-writeguard.ps1` |
+| [`fim`](fim.md) | Audits code, read-only | Read, Grep, Glob, Bash | `fim-readonly-guard.ps1` |
+| [`dev`](dev.md) | Writes code, never runs it | Read, Grep, Glob, Write, Edit | `dev-writeguard.ps1` |
+| [`planner`](planner.md) | Turns a scope into a plan and briefs | Read, Grep, Glob, Write, Bash | `planner-writeguard.ps1`, `planner-gitguard.ps1` |
+| [`researcher`](researcher.md) | Researches a topic online | WebSearch, WebFetch, Write | `researcher-writeguard.ps1` |
+| [`ssea`](ssea.md) | Senior engineer: architecture and technical review | Read, Grep, Glob, WebSearch, WebFetch, Agent | none |
+
 ### AMA — the agent maker
 
 You describe the assistant you want. AMA works out the rest: which tools it needs,
 what it must never touch, how many turns before it stops. It writes the definition
-file and gets it reviewed before calling it finished.
+file and gets it reviewed by FIM before calling it finished.
 
 It marks every setting as `STATED` (you said it), `DERIVED` (the job required it) or
 `ASSUMED` (it had to pick) — so you can see and correct every guess it made. Until a
@@ -55,19 +65,42 @@ that would close the gap.
 
 A short report on clean code is the correct output, not a lazy one.
 
-### Also included
+FIM also has an optional project mode: for a new or mid-project codebase it runs in
+two passes (questions first, then answers) and returns a master reference document for
+you to save.
 
-- **dev** — writes code to disk but never executes anything; returns the commands for
-  you to run.
-- **planner** — turns a scope into a technical plan and briefs for other agents, and
-  archives each run. Needs an archive folder: edit the `YOU` paths in `planner.md`,
-  `guards/planner-writeguard.ps1` and `guards/planner-gitguard.ps1`.
-- **researcher** — researches a topic online and writes one new `.txt` file. Edit the
-  `YOU` paths in `researcher.md` and `guards/researcher-writeguard.ps1`.
-- **ssea** — senior software engineer agent for architecture and technical review; can
-  delegate to `dev` and `fim` behind an approval gate.
+### dev — the developer
 
-`dev`, `planner` and `researcher` guards are not yet covered by the test suite.
+Writes and edits code inside the project root you give it, after reading the existing
+codebase. It never executes anything: no tests, builds, installers, package managers or
+git. It returns the exact commands for you to run, including commit and push.
+
+### planner — the briefer
+
+Dissects a scope, task or conversation into a technical plan plus ready-to-paste briefs
+for models and local agents, so you can delegate accurately without writing the
+technical detail yourself. If it hits blocking gaps it returns numbered questions first
+and stops.
+
+Every run is archived (prompt, reply, plan) as Markdown in a log folder that is meant to
+be a clone of your own private git repo. Its guards allow writing `.md` files only
+inside that folder, and only a fixed set of git commands against it. Those logs are
+yours; they are not part of this repo.
+
+### researcher — the researcher
+
+Looks a topic up online, writes the findings to one new `.txt` file in a research
+folder, and replies with the file's path. Its guard allows exactly one new `.txt` file
+there and never overwrites an existing one. The research notes are yours; they are not
+part of this repo.
+
+### ssea — the senior software engineer
+
+Takes a scope or planner output and makes it technically correct: architecture and
+technology choices, sequencing, risks and an end-to-end workflow, checked against
+current best practice on the web. It then either reports back, hands over delegation
+briefs, or calls agents such as `dev` and `fim` to do the work, depending on an
+approval gate.
 
 ---
 
@@ -77,8 +110,10 @@ Each agent is restricted to what it can do *honestly*:
 
 - FIM reads, so it reports what is readable. It can spot a loop inside a loop; it
   cannot tell you how much memory your program uses, and it won't pretend to.
+- `dev` writes, so it can't claim its code works — it hasn't run it, and says so.
 - AMA builds definitions, so it builds definitions — and won't call one finished
   before someone has reviewed it.
+- `researcher` searches and writes one file, so it can't touch your code.
 
 The limits aren't a safety feature bolted on afterwards. They're what makes the
 output trustworthy.
@@ -89,18 +124,30 @@ output trustworthy.
 
 ```powershell
 # copy the agents and their guards into your agents folder
-Copy-Item *.md "$HOME\.claude\agents\"
+foreach ($a in 'ama','dev','fim','planner','researcher','ssea') {
+    Copy-Item "$a.md" "$HOME\.claude\agents\"
+}
 Copy-Item guards\*.ps1 "$HOME\.claude\agents\"
 ```
 
-Then open each `.md` file and replace `<ABSOLUTE-PATH-TO>` in the frontmatter with
-the real path, **using forward slashes**:
+Then edit the copies:
 
-```yaml
-command: powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:/Users/YOU/.claude/agents/fim-readonly-guard.ps1"; exit $LASTEXITCODE
-```
+1. In each `.md` file that has a `hooks:` block (`ama`, `dev`, `fim`, `planner`,
+   `researcher`), replace `<ABSOLUTE-PATH-TO>` with the real path, **using forward
+   slashes**:
 
-Claude Code requires an absolute path here — it can't be made relative.
+   ```yaml
+   command: powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:/Users/YOU/.claude/agents/fim-readonly-guard.ps1"; exit $LASTEXITCODE
+   ```
+
+   Claude Code requires an absolute path here — it can't be made relative.
+
+2. For `planner` and `researcher`, also replace `YOU` in the folder paths. They are
+   hard-coded in `planner.md`, `researcher.md` and the matching guards
+   (`planner-writeguard.ps1`, `planner-gitguard.ps1`, `researcher-writeguard.ps1`):
+
+   - `C:/Users/YOU/planner-logs` — a git clone of your own private archive repo
+   - `C:/Users/YOU/Documents/research` — where research notes are written
 
 ### Using them
 
@@ -109,6 +156,14 @@ Claude Code requires an absolute path here — it can't be made relative.
 
 @fim review src/auth/. It should validate a JWT and reject expired tokens.
 Built with: npm run build. Do not run anything.
+
+@dev project root is C:/code/myapp. Add rate limiting to the login route.
+
+@planner Scope: add SSO to the admin app. Executor: dev.
+
+@researcher Compare SQLite and DuckDB for local analytics.
+
+@ssea review this plan technically. Plan only, don't start the work.
 ```
 
 ---
@@ -125,9 +180,9 @@ powershell -ExecutionPolicy Bypass -File tests\run-all.ps1
 `-ExecutionPolicy Bypass` is required because Windows blocks unsigned scripts by
 default. The agent hooks pass the same flag for the same reason.
 
-**121 cases for the `fim` and `ama` guards.** Full write-up,
-including the one gap this suite found and what the tests do *not* cover, in
-[docs/results.md](docs/results.md).
+**121 cases for the `fim` (106) and `ama` (15) guards, all passing on Windows
+PowerShell 5.1.** Full write-up, including the one gap an earlier suite found and what
+the tests do *not* cover, in [docs/results.md](docs/results.md).
 
 Each case is a single line — `ALLOW git status`, `DENY rm -rf build/` — so adding a
 case for a command you care about takes seconds.
@@ -139,6 +194,8 @@ case for a command you care about takes seconds.
 Stated plainly, because agents you can't trust are worse than no agents.
 
 - **Windows only.** All the guards are PowerShell. Cross-platform is planned.
+- **Not every guard is tested.** The `dev`, `planner` and `researcher` guards parse
+  cleanly but have no test cases, and `ssea` has no guard.
 - **The suite is slow on Windows PowerShell 5.1** — about two minutes, because it
   starts a fresh process for every case. Correct, but wasteful.
 - **A guard is a pattern matcher, not a sandbox.** It inspects the command an agent
