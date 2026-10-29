@@ -14,9 +14,7 @@ $runner = Join-Path $PSScriptRoot 'run-guard-tests.ps1'
 
 $suites = @(
     @{ Guard = 'guards/fim-readonly-guard.ps1'; Cases = 'tests/cases/fim-readonly-guard.cases'; Field = 'command'   },
-    @{ Guard = 'guards/test-runner-guard.ps1';  Cases = 'tests/cases/test-runner-guard.cases';  Field = 'command'   },
-    @{ Guard = 'guards/ama-writeguard.ps1';     Cases = 'tests/cases/ama-writeguard.cases';     Field = 'file_path' },
-    @{ Guard = 'guards/ohum-guard.ps1';         Cases = 'tests/cases/ohum-guard.cases';         Field = 'file_path' }
+    @{ Guard = 'guards/ama-writeguard.ps1';     Cases = 'tests/cases/ama-writeguard.cases';     Field = 'file_path' }
 )
 
 $anyFailed = $false

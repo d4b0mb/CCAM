@@ -2,6 +2,9 @@
 
 **Run date:** 22 September 2026 · **CCAM version:** 0.4.1
 
+> Historical record. The `test-runner` guard measured below has since been removed from
+> the repo; the current suite covers the `fim` and `ama` guards only.
+
 The three guards are the mechanism behind CCAM's central claim: that each agent is
 restricted to what it can honestly do. Until now that claim was asserted. This is the
 first time it has been measured.

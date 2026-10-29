@@ -1,6 +1,6 @@
 # CCAM — Claude Code Agent Modules
 
-**Three Claude Code subagents that build, audit and test — and can't claim work they didn't do.**
+**Six Claude Code subagents that build, plan, research and audit — and can't claim work they didn't do.**
 
 Claude Code will tell you it checked something. Usually it did. Sometimes it didn't,
 and there's no way for you to tell the difference. CCAM's agents are built so the
@@ -9,8 +9,7 @@ is tagged with how it was established, and every report ends with a list of what
 *not* checked.
 
 > **Version 0.4.1 — early.** In daily use by its author. Windows-only.
-> Guard behaviour is measured, not assumed: **179 test cases, all passing,
-> on Windows PowerShell 5.1 and PowerShell 7** — see
+> The `fim` and `ama` guards are measured, not assumed: **121 test cases** — see
 > [Guard test results](docs/results.md).
 > Read [Limitations](#limitations) before relying on it.
 
@@ -26,7 +25,7 @@ build one, because it means learning which settings exist, which tool names are
 valid, why hook paths have to be absolute, and — the one that catches everyone —
 that the `description` field is what decides whether your agent ever gets picked.
 
-CCAM gives you three that are already built, and one that builds more.
+CCAM gives you six that are already built, one of which builds more.
 
 ---
 
@@ -42,20 +41,6 @@ It marks every setting as `STATED` (you said it), `DERIVED` (the job required it
 `ASSUMED` (it had to pick) — so you can see and correct every guess it made. Until a
 reviewer has read the result, AMA calls it a draft and says so.
 
-### OHUM — the update manager
-
-Changes an agent that already exists. You say which agent and what should change;
-OHUM makes the smallest edit, shows the old and new text side by side, and gets the
-result reviewed by FIM.
-
-It can only edit `<name>.md` files in an agents directory. It cannot edit its own
-definition or any guard script, so it cannot loosen the limits that make the other
-agents trustworthy. Edits that *do* loosen an agent (adding Bash or Write, weakening
-a hook, raising the turn cap) need your explicit yes first.
-
-**Guard test status.** `ohum-guard.ps1` passes its 26 cases on PowerShell 7.4.6 on
-Linux. It has not been run on Windows PowerShell 5.1, which is what Claude Code uses.
-
 ### FIM — the auditor
 
 Reads code and reports whether it is correct, functional, necessary, and in the right
@@ -70,18 +55,19 @@ that would close the gap.
 
 A short report on clean code is the correct output, not a lazy one.
 
-### test-runner — the honest test reporter
+### Also included
 
-Runs a project's test suite and reports the failures — name, error, location — with
-one summary line for everything that passed.
+- **dev** — writes code to disk but never executes anything; returns the commands for
+  you to run.
+- **planner** — turns a scope into a technical plan and briefs for other agents, and
+  archives each run. Needs an archive folder: edit the `YOU` paths in `planner.md`,
+  `guards/planner-writeguard.ps1` and `guards/planner-gitguard.ps1`.
+- **researcher** — researches a topic online and writes one new `.txt` file. Edit the
+  `YOU` paths in `researcher.md` and `guards/researcher-writeguard.ps1`.
+- **ssea** — senior software engineer agent for architecture and technical review; can
+  delegate to `dev` and `fim` behind an approval gate.
 
-It has no ability to write files at all. That matters more than it sounds: told to
-make the tests pass, a general-purpose assistant can edit the failing test. Sometimes
-that's right. Often it's the worst outcome available — green tests, broken code.
-test-runner physically cannot do it.
-
-It also never guesses your test command. It reads your project's own config and cites
-where it found it, or reports that it couldn't determine one.
+`dev`, `planner` and `researcher` guards are not yet covered by the test suite.
 
 ---
 
@@ -91,7 +77,6 @@ Each agent is restricted to what it can do *honestly*:
 
 - FIM reads, so it reports what is readable. It can spot a loop inside a loop; it
   cannot tell you how much memory your program uses, and it won't pretend to.
-- test-runner runs tests, so it reports test results. It can't make them pass.
 - AMA builds definitions, so it builds definitions — and won't call one finished
   before someone has reviewed it.
 
@@ -122,12 +107,8 @@ Claude Code requires an absolute path here — it can't be made relative.
 ```
 @ama I want an agent that flags any pull request touching the database schema.
 
-@ohum In C:/Users/YOU/.claude/agents, lower fim's maxTurns to 30.
-
 @fim review src/auth/. It should validate a JWT and reject expired tokens.
 Built with: npm run build. Do not run anything.
-
-@test-runner project root is C:/code/myapp
 ```
 
 ---
@@ -144,7 +125,7 @@ powershell -ExecutionPolicy Bypass -File tests\run-all.ps1
 `-ExecutionPolicy Bypass` is required because Windows blocks unsigned scripts by
 default. The agent hooks pass the same flag for the same reason.
 
-**179 cases · 179 passed · 0 false alarms · 0 missed mutations.** Full write-up,
+**121 cases for the `fim` and `ama` guards.** Full write-up,
 including the one gap this suite found and what the tests do *not* cover, in
 [docs/results.md](docs/results.md).
 
@@ -157,16 +138,16 @@ case for a command you care about takes seconds.
 
 Stated plainly, because agents you can't trust are worse than no agents.
 
-- **Windows only.** All three guards are PowerShell. Cross-platform is planned.
+- **Windows only.** All the guards are PowerShell. Cross-platform is planned.
 - **The suite is slow on Windows PowerShell 5.1** — about two minutes, because it
   starts a fresh process for every case. Correct, but wasteful.
 - **A guard is a pattern matcher, not a sandbox.** It inspects the command an agent
   asks to run. It cannot see inside a script once that script starts, and a
   determined user could get past it. It is built to stop an agent's own mistakes,
   which is the actual threat here — not to contain an adversary.
-- **Nothing here can safely execute your code.** All three agents are readers by
-  design, so anything needing live execution has nowhere to go. That's what the
-  fourth agent is for.
+- **Nothing here executes your code.** `fim` reads, `dev` writes without running
+  anything, and the rest plan or research, so anything needing live execution has
+  nowhere to go.
 - **Some documentation inside `ama.md` is stale** — its list of confirmed settings
   is more conservative than what current versions actually accept.
 
@@ -174,12 +155,10 @@ Stated plainly, because agents you can't trust are worse than no agents.
 
 ## Roadmap
 
-- [x] **Test suite for the guards** — 179 cases with known correct verdicts, so the
+- [x] **Test suite for the guards** — cases with known correct verdicts, so the
       safety claims are measured rather than asserted
-- [x] Verified on Windows PowerShell 5.1 and PowerShell 7 — identical results
 - [x] Close the bare-`tsc` gap found by the suite
-- [ ] **A fourth agent that can execute**, confined to a scratch copy of your code —
-      so FIM can suspect a problem and something else can actually measure it
+- [ ] Test cases for the `dev`, `planner` and `researcher` guards
 - [ ] Cross-platform guards (macOS / Linux)
 - [ ] A validator script, so a definition can be checked without a reviewer agent
 - [ ] Pre-tested guard library, replacing guard generation
