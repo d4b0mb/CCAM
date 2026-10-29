@@ -25,14 +25,12 @@ the guards and in the matching definition files before use.
 - FIM project mode (Section 7 of `fim.md`): optional two-run flow that produces a
   master reference document for a new or mid-project codebase.
 
-- `ohum.md` — OHUM, the on-hand update manager. Edits existing agent definitions,
-  flags loosening changes for explicit confirmation, hands every edit to FIM.
-- `guards/ohum-guard.ps1` — Edit guard: `<name>.md` directly inside an agents
-  directory only; denies `ohum.md`, all `.ps1` files, nested paths.
-- `tests/cases/ohum-guard.cases` (26 cases) and its entry in `tests/run-all.ps1`.
+Removed:
 
-Results: the new suite passes 26 of 26 on PowerShell 7.4.6 on Linux. Not yet run on
-Windows PowerShell 5.1. The 179-case result below is for the earlier guards only.
+- `ohum.md`, `guards/ohum-guard.ps1` and their test cases (OHUM).
+- `test-runner.md`, `guards/test-runner-guard.ps1` and their test cases. The suite now
+  covers the `fim` and `ama` guards (121 cases); the results below were recorded
+  before this removal and include the removed guards.
 
 ## 0.4.1 — 2026-09-22
 
