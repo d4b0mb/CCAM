@@ -2,6 +2,18 @@
 
 **Six Claude Code subagents that build, plan, research and audit — and can't claim work they didn't do.**
 
+#TL;DR# this exists so smaller, specialized agents do background work so your main Claud Code session can 
+hand off trivial work and stay free for more complex work. Or simply await further, perhaps more complicated
+or important instructions from you. 
+A six-agent Claude Code team: 
+1.FIM reviews project scope and/or code to cross-reference it's use and end goal. 
+2.DEV writes code
+3.PLANNER takes human jargon and purifies it for documentation. Briefs. AI-Assisted work and makes a plan out of BS.
+4.RESEARCHER goes online and finds the latest gossip about the topic at hand
+5.SSEA Senior Engineer! can call other agents like DEV and/or FIM and has the eyes and mind of a senior software engineer.
+6.AMA makes making agents the right way easy where you have a simple prompt and she does it for you.
+You might be thinking, Claude can do all that too. Well, not all of it. And in my personal experience, my agents are dope.
+
 Claude Code will tell you it checked something. Usually it did. Sometimes it didn't,
 and there's no way for you to tell the difference. CCAM's agents are built so the
 difference is visible: each one is restricted to what it can honestly do, and the
