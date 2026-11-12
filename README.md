@@ -4,7 +4,7 @@
 
 #TL;DR# this exists so smaller, specialized agents do background work so your main Claud Code session can 
 hand off trivial work and stay free for more complex work. Or simply await further, perhaps more complicated
-or important instructions from you. 
+or important work or instructions from you. All those times the word work was used. You still didn't do any. 
 A six-agent Claude Code team: 
 1.FIM reviews project scope and/or code to cross-reference it's use and end goal. 
 2.DEV writes code
